@@ -1,24 +1,23 @@
-# 📄 Documentation Index
+# 📄 문서 인덱스
 
-Welcome to the PDF Viewer App documentation. This directory contains detailed technical information and guides.
+PDF 뷰어 앱 문서 센터에 오신 것을 환영합니다. 이 디렉토리에는 상세한 기술 정보와 가이드가 포함되어 있습니다.
 
-## 📚 Table of Contents
+## 📚 목차
 
-1.  [**Technical Setup & Configuration**](./setup.md)
-    -   How PDF.js and Web Workers are integrated.
-    -   Special handling for `pnpm` and `Vite`.
-2.  [**Architecture Overview**](./architecture.md)
-    -   Directory structure.
-    -   Data flow and rendering logic.
-    -   Performance optimizations.
-3.  [**Features & Usage Guide**](./features.md)
-    -   How to upload and navigate PDFs.
-    -   UI elements and error handling.
+1.  [**기술 설정 및 구성**](./setup.md)
+    -   PDF.js와 웹 워커 통합 방법.
+    -   `pnpm` 및 `Vite`를 위한 특별 처리 사항.
+2.  [**아키텍처 개요**](./architecture.md)
+    -   디렉토리 구조.
+    -   데이터 흐름 및 렌더링 로직.
+    -   성능 최적화 전략.
+3.  [**기능 및 사용 가이드**](./features.md)
+    -   PDF 업로드 및 탐색 방법.
+    -   UI 요소 및 에러 핸들링.
 
 ---
 
-## 🔗 Quick Links
+## 🔗 빠른 링크
 
--   [Root README.md](../README.md)
--   [Project Source (src/)](../src/)
-
+-   [루트 README.md](../README.md)
+-   [프로젝트 소스 (src/)](../src/)

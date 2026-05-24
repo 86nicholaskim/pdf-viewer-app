@@ -1,28 +1,28 @@
-# ✨ Features & Usage Guide
+# ✨ 기능 및 사용 가이드
 
-This document provides a walkthrough of the features available in the PDF Viewer App and how to use them.
+이 문서는 PDF 뷰어 앱에서 제공하는 기능과 사용 방법에 대한 안내를 제공합니다.
 
-## 📂 Uploading a PDF
+## 📂 PDF 업로드하기
 
-To view a PDF:
-1.  Click the "Choose File" button in the dashed box.
-2.  Select a valid `.pdf` file from your computer.
-3.  The application will automatically start processing the file.
+PDF를 보려면 다음 단계를 따르세요.
+1.  점선 박스 안에 있는 "파일 선택" 버튼을 클릭합니다.
+2.  컴퓨터에서 유효한 `.pdf` 파일을 선택합니다.
+3.  애플리케이션이 자동으로 파일 처리를 시작합니다.
 
-## 🧭 Navigation
+## 🧭 페이지 탐색
 
-Once a PDF is loaded, navigation controls appear:
--   **Previous Page**: Moves to the previous page (disabled if on page 1).
--   **Next Page**: Moves to the next page (disabled if on the last page).
--   **Page Counter**: Displays the current page number and total pages (e.g., `3 / 10`).
+PDF가 로드되면 다음과 같은 탐색 제어 도구가 나타납니다.
+-   **이전 페이지**: 이전 페이지로 이동합니다 (1페이지인 경우 비활성화).
+-   **다음 페이지**: 다음 페이지로 이동합니다 (마지막 페이지인 경우 비활성화).
+-   **페이지 카운터**: 현재 페이지 번호와 전체 페이지 수를 표시합니다 (예: `3 / 10`).
 
-## 🖼 Viewing
+## 🖼 뷰어 화면
 
--   The PDF is rendered at a default 1.5x scale for clarity.
--   The viewer is centered on the screen.
--   A subtle shadow and border are applied to the canvas to make it stand out.
+-   PDF는 선명도를 위해 기본적으로 1.5배율로 렌더링됩니다.
+-   뷰어는 화면 중앙에 배치됩니다.
+-   캔버스에 부드러운 그림자와 테두리가 적용되어 가독성을 높였습니다.
 
-## ⚠️ Error Handling
+## ⚠️ 에러 핸들링
 
--   **Invalid File**: If you select a file that is not a PDF, an alert will inform you to select a correct file.
--   **Processing States**: A loading message ("⚠️ Worker is processing the file...") is shown while the PDF.js worker is busy parsing the data.
+-   **유효하지 않은 파일**: PDF가 아닌 파일을 선택하면 올바른 파일을 선택하라는 알림이 표시됩니다.
+-   **처리 상태 표시**: PDF.js 워커가 데이터를 파싱하는 동안 "⚠️ 워커가 백그라운드에서 첨부된 파일을 처리 중입니다..."라는 로딩 메시지가 표시됩니다.
