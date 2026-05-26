@@ -86,36 +86,44 @@ export function PDFCanvas({ pdfDoc, pageNum }) {
 *   **JSX 반환**: 컴포넌트의 가장 하단에서 최종적인 UI 구조만 정의합니다.
 *   **연결 고리**: `ref`가 JSX와 라이브러리 로직 사이의 다리 역할을 합니다.
 
-## 7. PDF 내용을 HTML/텍스트로 추출하기
-Canvas는 "그림"일 뿐이지만, PDF.js는 내부의 **실제 텍스트 데이터**를 추출하는 기능도 제공합니다. 이를 통해 PDF 내용을 HTML로 가공하거나 외부로 전달할 수 있습니다.
+## 7. PDF 내용을 HTML/텍스트로 추출하기 (최신 API)
+PDF.js v4 이상에서는 `TextLayer` 클래스를 사용하여 본문 데이터를 HTML로 변환합니다. 이 방식은 라이브러리가 복잡한 좌표 계산을 대신해주므로 가장 권장되는 방법입니다.
 
-### 1) 데이터 추출의 핵심: `getTextContent()`
-Canvas에 그리는 `render()` 함수 대신 `page.getTextContent()`를 사용하면 다음과 같은 데이터를 얻을 수 있습니다.
-*   **items**: 각 글자 뭉치(텍스트)와 그 위치 정보(좌표, 크기).
-*   **styles**: 해당 글자에 적용된 폰트 이름과 스타일.
+### 1) 구현 방법: `TextLayer` 클래스 활용
+라이브러리가 제공하는 `TextLayer`를 사용하면, 우리가 준비한 빈 `div` 안에 수백 개의 텍스트 요소(`span`)를 자동으로 채워줍니다.
 
-### 2) HTML 가공 포인트 (Text Layer)
-추출한 데이터를 바탕으로 리액트에서 다음과 같이 HTML 요소를 생성할 수 있습니다.
 ```javascript
-// 예시: 텍스트 데이터를 추출하고 중간에 수정(Replace)하는 흐름
-page.getTextContent().then((textContent) => {
-  const modifiedHtml = textContent.items.map(item => {
-    // [리플레이스 포인트]
-    // 원본 데이터(item.str)를 가공합니다.
-    const processedText = item.str.replace("비밀번호", "********");
-    
-    const style = `left: ${item.transform[4]}px; top: ${item.transform[5]}px;`;
-    return `<span style="${style}">${processedText}</span>`;
-  });
+// [단계별 실행 흐름]
+// 1. 데이터 및 뷰포트 준비
+const textContent = await page.getTextContent();
+const viewport = page.getViewport({ scale: 1.5 });
+
+// 2. 가공 포인트 (Replace) - 데이터 객체 내부의 글자를 직접 수정
+textContent.items.forEach(item => {
+  item.str = item.str.replace("원본단어", "수정단어");
 });
+
+// 3. TextLayer 인스턴스 생성 및 실행
+const textLayer = new pdfjsLib.TextLayer({
+  textContentSource: textContent,
+  container: containerElement, // HTML이 채워질 부모 div
+  viewport: viewport,
+});
+
+await textLayer.render();
 ```
 
-### 3) 텍스트 리플레이스(Replace) 활용
-*   **민감 정보 마스킹**: 주민번호, 연락처 등 노출되면 안 되는 정보를 HTML로 보여주기 전에 가공할 수 있습니다.
-*   **키워드 하이라이트**: 특정 검색어를 `<b>` 태그나 배경색이 있는 `<span>`으로 감싸서 강조할 수 있습니다.
-*   **언어 번역**: 추출된 텍스트를 번역 API에 보낸 뒤, 번역된 결과로 교체해서 HTML을 구성할 수도 있습니다.
+### 2) 생성된 HTML 구조의 특징 (1단계 뎁스)
+`TextLayer`가 생성하는 HTML은 다음과 같이 **부모 아래에 모든 글자가 수평적으로 나열되는 구조**를 가집니다.
 
-## 8. 최종 응용 시나리오: HTML 추출 파이프라인
+*   **구조적 특징**: 부모 `div` 바로 밑에 수많은 `span` 태그가 **1단계 뎁스**로만 존재합니다.
+*   **좌표 고정**: 복잡한 계층 구조(Depth) 대신, 각 `span` 마다 고유한 좌표(`matrix` 또는 `top/left`)를 부여하여 PDF 원본 레이아웃을 재현합니다.
+*   **가공의 편리함**: 모든 요소가 같은 층에 있으므로, 특정 단어를 찾거나 일괄적으로 스타일을 변경하기에 매우 유리한 구조입니다.
+
+### 3) 최종 HTML 소스 획득 (innerHTML)
+렌더링이 완료된 후 `containerElement.innerHTML`을 읽으면, 정확한 위치 정보와 수정된 텍스트가 포함된 **완성된 HTML 문자열**을 얻을 수 있습니다. 이 문자열은 다른 페이지로 전달하거나 서버로 전송하여 인쇄용으로 활용하기에 최적화된 상태입니다.
+
+## 8. 최종 응용 시나리오
 단순 뷰어를 넘어 PDF 데이터를 가공하여 외부로 보내야 할 때 사용하는 최종 단계입니다.
 
 **[데이터 -> DOM -> 수정 -> HTML 추출] 흐름**
