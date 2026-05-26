@@ -9,33 +9,44 @@ export function usePDFViewer() {
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pageNum, setPageNum] = useState(1);
 
-  const loadPDF = (file) => {
-    if (!file || file.type !== "application/pdf") {
-      alert("올바른 PDF 파일을 선택해주세요.");
-      return;
-    }
+  const loadPDF = (source) => {
+    if (!source) return;
 
     setLoading(true);
     setPageNum(1);
 
-    const fileReader = new FileReader();
-
-    fileReader.onload = function () {
-      const typedArray = new Uint8Array(this.result);
-      const loadingTask = pdfjsLib.getDocument({ data: typedArray });
-
+    if (typeof source === "string") {
+      // URL 경로 처리
+      const loadingTask = pdfjsLib.getDocument(source);
       loadingTask.promise
         .then((pdf) => {
           setPdfDoc(pdf);
           setLoading(false);
         })
         .catch((err) => {
-          console.error("PDF 파일 분석 실패:", err);
+          console.error("URL PDF 로드 실패:", err);
+          alert("PDF URL을 불러오는 데 실패했습니다.");
           setLoading(false);
         });
-    };
+    } else if (source instanceof File) {
+      // 로컬 파일 처리
+      const fileReader = new FileReader();
+      fileReader.onload = function () {
+        const typedArray = new Uint8Array(this.result);
+        const loadingTask = pdfjsLib.getDocument({ data: typedArray });
 
-    fileReader.readAsArrayBuffer(file);
+        loadingTask.promise
+          .then((pdf) => {
+            setPdfDoc(pdf);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error("PDF 파일 분석 실패:", err);
+            setLoading(false);
+          });
+      };
+      fileReader.readAsArrayBuffer(source);
+    }
   };
 
   const goToNextPage = () => {
