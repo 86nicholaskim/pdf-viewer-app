@@ -84,59 +84,149 @@ function App() {
   };
 
   const handlePrint = async () => {
-    // ... 기존 handlePrint 로직 ...
     if (!pdfDoc) return;
     setIsPrinting(true);
+    performance.mark("print-png-start");
 
     try {
       const images = [];
-      const scale = 2; // 고해상도 인쇄를 위해 스케일 업
+      const scale = 2;
 
       for (let i = 1; i <= pdfDoc.numPages; i++) {
         const page = await pdfDoc.getPage(i);
         const viewport = page.getViewport({ scale });
-        
-        // 오프스크린 캔버스 생성
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-
         await page.render({ canvasContext: context, viewport }).promise;
-        
-        // 이미지 데이터 추출 (Base64)
         images.push(canvas.toDataURL("image/png"));
       }
 
-      // 새 창을 띄워 인쇄용 이미지 나열
       const printWindow = window.open("", "_blank");
       printWindow.document.write(`
         <html>
           <head>
-            <title>PDF Image Print</title>
+            <title>PDF Print (PNG String)</title>
             <style>
-              body { margin: 0; padding: 0; text-align: center; }
+              body { margin: 0; padding: 0; }
               img { width: 100%; height: auto; display: block; page-break-after: always; }
-              @media print {
-                img { page-break-after: always; }
-              }
             </style>
           </head>
           <body>
             ${images.map(img => `<img src="${img}" />`).join("")}
+            <script>window.onload = () => { window.print(); window.close(); };</script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      performance.mark("print-png-end");
+      performance.measure("PNG Print Duration", "print-png-start", "print-png-end");
+      console.log("PNG 인쇄 소요 시간:", performance.getEntriesByName("PNG Print Duration")[0].duration, "ms");
+    } catch (error) {
+      console.error("인쇄 오류:", error);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const handlePrintJPG = async () => {
+    if (!pdfDoc) return;
+    setIsPrinting(true);
+    performance.mark("print-jpg-start");
+
+    try {
+      const images = [];
+      const scale = 2;
+
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        images.push(canvas.toDataURL("image/jpeg", 0.7));
+      }
+
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>PDF Print (JPG String)</title>
+            <style>
+              body { margin: 0; padding: 0; }
+              img { width: 100%; height: auto; display: block; page-break-after: always; }
+            </style>
+          </head>
+          <body>
+            ${images.map(img => `<img src="${img}" />`).join("")}
+            <script>window.onload = () => { window.print(); window.close(); };</script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      performance.mark("print-jpg-end");
+      performance.measure("JPG Print Duration", "print-jpg-start", "print-jpg-end");
+      console.log("JPG 인쇄 소요 시간:", performance.getEntriesByName("JPG Print Duration")[0].duration, "ms");
+    } catch (error) {
+      console.error("JPG 인쇄 오류:", error);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const handlePrintBlob = async () => {
+    if (!pdfDoc) return;
+    setIsPrinting(true);
+    performance.mark("print-blob-start");
+
+    try {
+      const imageUrls = [];
+      const scale = 2;
+
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        const url = URL.createObjectURL(blob);
+        imageUrls.push(url);
+      }
+
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>PDF Print (Blob ObjectURL)</title>
+            <style>
+              body { margin: 0; padding: 0; }
+              img { width: 100%; height: auto; display: block; page-break-after: always; }
+            </style>
+          </head>
+          <body>
+            ${imageUrls.map(url => `<img src="${url}" />`).join("")}
             <script>
-              window.onload = () => {
-                window.print();
-                window.close();
+              window.onload = () => { 
+                window.print(); 
+                window.close(); 
               };
             </script>
           </body>
         </html>
       `);
       printWindow.document.close();
+      performance.mark("print-blob-end");
+      performance.measure("Blob Print Duration", "print-blob-start", "print-blob-end");
+      console.log("Blob 인쇄 소요 시간:", performance.getEntriesByName("Blob Print Duration")[0].duration, "ms");
     } catch (error) {
-      console.error("인쇄 준비 중 오류:", error);
-      alert("인쇄를 준비하는 동안 오류가 발생했습니다.");
+      console.error("Blob 인쇄 오류:", error);
     } finally {
       setIsPrinting(false);
     }
@@ -190,6 +280,8 @@ function App() {
           onPrev={goToPrevPage}
           onNext={goToNextPage}
           onPrint={handlePrint}
+          onPrintJPG={handlePrintJPG}
+          onPrintBlob={handlePrintBlob}
           onGenerateHtml={generateStandaloneHtml}
         />
       )}
