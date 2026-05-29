@@ -24,14 +24,15 @@ function App() {
     }
   };
 
-  const generateStandaloneHtml = async () => {
+  const generateStandaloneHtmlJPG = async () => {
     if (!pdfDoc) return;
     setIsPrinting(true);
     setGeneratedHtml("");
+    performance.mark("gen-html-jpg-start");
 
     try {
       const images = [];
-      const scale = 1.5; // 이메일/외부 문서용이므로 적당한 크기 유지
+      const scale = 1.5;
 
       for (let i = 1; i <= pdfDoc.numPages; i++) {
         const page = await pdfDoc.getPage(i);
@@ -41,34 +42,49 @@ function App() {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         await page.render({ canvasContext: context, viewport }).promise;
-        images.push(canvas.toDataURL("image/jpeg", 0.8)); // 용량을 위해 jpeg 압축
+        images.push(canvas.toDataURL("image/jpeg", 0.8));
       }
 
-      const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>PDF Document Content</title>
-  <style>
-    body { margin: 0; padding: 20px; background: #f0f0f0; font-family: sans-serif; }
-    .page-container { max-width: 800px; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    img { width: 100%; height: auto; display: block; }
-    @media print {
-      body { background: white; padding: 0; }
-      .page-container { box-shadow: none; margin-bottom: 0; page-break-after: always; }
-    }
-  </style>
-</head>
-<body>
-  ${images.map(img => `<div class="page-container"><img src="${img}" /></div>`).join("")}
-</body>
-</html>`;
-      
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF JPG Document</title><style>body { margin: 0; padding: 20px; background: #f0f0f0; font-family: sans-serif; }.page-container { max-width: 800px; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }img { width: 100%; height: auto; display: block; }@media print { body { background: white; padding: 0; }.page-container { box-shadow: none; margin-bottom: 0; page-break-after: always; }}</style></head><body>${images.map(img => `<div class="page-container"><img src="${img}" /></div>`).join("")}</body></html>`;
       setGeneratedHtml(htmlContent);
+      performance.mark("gen-html-jpg-end");
+      performance.measure("HTML Gen (JPG) Duration", "gen-html-jpg-start", "gen-html-jpg-end");
+      console.log("HTML (JPG) 생성 시간:", performance.getEntriesByName("HTML Gen (JPG) Duration")[0].duration, "ms");
     } catch (error) {
-      console.error("HTML 생성 오류:", error);
-      alert("HTML 생성 중 오류가 발생했습니다.");
+      console.error("HTML JPG 생성 오류:", error);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const generateStandaloneHtmlPNG = async () => {
+    if (!pdfDoc) return;
+    setIsPrinting(true);
+    setGeneratedHtml("");
+    performance.mark("gen-html-png-start");
+
+    try {
+      const images = [];
+      const scale = 1.5;
+
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        images.push(canvas.toDataURL("image/png"));
+      }
+
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF PNG Document</title><style>body { margin: 0; padding: 20px; background: #f0f0f0; font-family: sans-serif; }.page-container { max-width: 800px; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }img { width: 100%; height: auto; display: block; }@media print { body { background: white; padding: 0; }.page-container { box-shadow: none; margin-bottom: 0; page-break-after: always; }}</style></head><body>${images.map(img => `<div class="page-container"><img src="${img}" /></div>`).join("")}</body></html>`;
+      setGeneratedHtml(htmlContent);
+      performance.mark("gen-html-png-end");
+      performance.measure("HTML Gen (PNG) Duration", "gen-html-png-start", "gen-html-png-end");
+      console.log("HTML (PNG) 생성 시간:", performance.getEntriesByName("HTML Gen (PNG) Duration")[0].duration, "ms");
+    } catch (error) {
+      console.error("HTML PNG 생성 오류:", error);
     } finally {
       setIsPrinting(false);
     }
@@ -282,7 +298,8 @@ function App() {
           onPrint={handlePrint}
           onPrintJPG={handlePrintJPG}
           onPrintBlob={handlePrintBlob}
-          onGenerateHtml={generateStandaloneHtml}
+          onGenerateHtmlJPG={generateStandaloneHtmlJPG}
+          onGenerateHtmlPNG={generateStandaloneHtmlPNG}
         />
       )}
 

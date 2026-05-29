@@ -6,7 +6,8 @@ export function PDFControls({
   onPrint, 
   onPrintJPG, 
   onPrintBlob, 
-  onGenerateHtml 
+  onGenerateHtmlJPG,
+  onGenerateHtmlPNG
 }) {
   return (
     <div style={{ marginBottom: "15px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "center" }}>
@@ -42,10 +43,16 @@ export function PDFControls({
           Blob 객체 인쇄 (메모리 효율)
         </button>
         <button 
-          onClick={onGenerateHtml}
+          onClick={onGenerateHtmlJPG}
           style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#17a2b8", color: "white", border: "none", borderRadius: "4px" }}
         >
-          외부문서용 HTML 생성
+          외부용 HTML (JPG)
+        </button>
+        <button 
+          onClick={onGenerateHtmlPNG}
+          style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#0056b3", color: "white", border: "none", borderRadius: "4px" }}
+        >
+          외부용 HTML (PNG)
         </button>
       </div>
     </div>
