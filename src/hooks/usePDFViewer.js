@@ -23,7 +23,7 @@ export function usePDFViewer() {
     setPageNum(1);
 
     if (typeof source === "string") {
-      const loadingTask = pdfjs.getDocument(source);
+      const loadingTask = pdfjs.getDocument({ url: source });
       loadingTask.promise
         .then((pdf) => {
           setPdfDoc(pdf);
