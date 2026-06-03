@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# PDF.js generated assets
+public/pdfjs*
+public/pdf.worker*
