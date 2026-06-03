@@ -6,10 +6,10 @@
   "scripts": {
     "ai": "gemini",
     "lint": "eslint .",
-    "dev": "pnpm copy-worker && vite",
-    "build": "pnpm copy-worker && vite build",
+    "dev": "pnpm build:pdfjs && vite",
+    "build": "pnpm build:pdfjs && vite build",
     "preview": "vite preview",
-    "copy-worker": "node -e \"fs.mkdirSync('public', {recursive: true}); fs.copyFileSync('node_modules/pdfjs-dist/build/pdf.worker.min.mjs', 'public/pdf.worker.min.mjs')\""
+    "build:pdfjs": "pnpm --filter @myorg/pdfjs run build && node scripts/sync-pdfjs.cjs"
   },
   "dependencies": {
     "pdfjs-dist": "^5.7.284",

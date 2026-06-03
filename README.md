@@ -14,8 +14,9 @@
 
 - **프레임워크**: [React 19](https://react.dev/)
 - **번들러**: [Vite](https://vitejs.dev/)
-- **라이브러리**: [PDF.js](https://mozilla.github.io/pdf.js/)
-- **패키지 매니저**: [pnpm](https://pnpm.io/)
+- **라이브러리**: [PDF.js](https://mozilla.github.io/pdf.js/) (ESM to IIFE 변환)
+- **번들 최적화**: [Rollup](https://rollupjs.org/) (Custom IIFE bundling)
+- **패키지 매니저**: [pnpm](https://pnpm.io/) (Workspace 지원)
 
 ## 🏁 시작하기
 
@@ -40,7 +41,7 @@ pnpm install
 # 개발 서버 시작
 pnpm dev
 ```
-`dev` 스크립트는 `public/` 디렉토리에 PDF.js 워커를 사용할 수 있도록 `copy-worker`를 자동으로 실행합니다.
+`dev` 스크립트는 `libs/pdfjs`를 빌드하여 IIFE 번들을 생성하고, 해시된 파일들을 `public/` 디렉토리에 자동으로 배치합니다.
 
 ### 빌드
 
@@ -48,6 +49,13 @@ pnpm dev
 # 프로덕션용 빌드
 pnpm build
 ```
+
+## 🏗 아키텍처 특징
+
+- **IIFE 변환**: 최신 PDF.js ESM 모듈을 Rollup을 사용하여 IIFE 형식으로 자동 변환합니다. 이를 통해 전역 변수(`window.pdfjsLib`) 기반의 안정적인 로딩이 가능합니다.
+- **Content Hashing**: 빌드 시 파일 내용에 따른 해시값을 생성하여 브라우저 캐싱 효율을 극대화합니다.
+- **동적 로딩**: 앱 실행 시 `pdfjs-version-map.json`을 참조하여 최신 해시가 적용된 PDF.js 파일을 동적으로 로드합니다.
+- **워크스페이스 구조**: `libs/pdfjs`를 별도 패키지로 분리하여 라이브러리 변환 로직을 깔끔하게 관리합니다.
 
 ## 📖 상세 문서
 

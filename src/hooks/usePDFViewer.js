@@ -1,23 +1,29 @@
 import { useState, useEffect } from "react";
-import * as pdfjsLib from "pdfjs-dist";
-
-// Bind local worker path
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+import { loadPDFJS } from "../utils/pdfjsLoader";
 
 export function usePDFViewer() {
   const [loading, setLoading] = useState(false);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pageNum, setPageNum] = useState(1);
+  const [pdfjs, setPdfjs] = useState(null);
+
+  useEffect(() => {
+    loadPDFJS().then(({ pdfjsLib, workerFileName }) => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `/${workerFileName}`;
+      setPdfjs(pdfjsLib);
+    }).catch(err => {
+      console.error("Failed to load PDF.js:", err);
+    });
+  }, []);
 
   const loadPDF = (source) => {
-    if (!source) return;
+    if (!source || !pdfjs) return;
 
     setLoading(true);
     setPageNum(1);
 
     if (typeof source === "string") {
-      // URL 경로 처리
-      const loadingTask = pdfjsLib.getDocument(source);
+      const loadingTask = pdfjs.getDocument(source);
       loadingTask.promise
         .then((pdf) => {
           setPdfDoc(pdf);
@@ -29,11 +35,10 @@ export function usePDFViewer() {
           setLoading(false);
         });
     } else if (source instanceof File) {
-      // 로컬 파일 처리
       const fileReader = new FileReader();
       fileReader.onload = function () {
         const typedArray = new Uint8Array(this.result);
-        const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+        const loadingTask = pdfjs.getDocument({ data: typedArray });
 
         loadingTask.promise
           .then((pdf) => {

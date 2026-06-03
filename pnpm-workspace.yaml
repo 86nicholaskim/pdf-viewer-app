@@ -1,3 +1,7 @@
+packages:
+  - "."
+  - "libs/**"
+
 allowBuilds:
-  '@github/keytar': true
+  "@github/keytar": true
   node-pty: true
