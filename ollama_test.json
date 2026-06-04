@@ -1,0 +1,5 @@
+{
+  "model": "gemma4:e4b",
+  "prompt": "안녕, 간단하게 인사해줘.",
+  "stream": false
+}
