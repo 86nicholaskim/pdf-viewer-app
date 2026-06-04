@@ -1,4 +1,8 @@
-export function FileUploader({ onFileChange }) {
+interface FileUploaderProps {
+  onFileChange: (file: File) => void;
+}
+
+export function FileUploader({ onFileChange }: FileUploaderProps) {
   return (
     <div
       style={{
@@ -12,7 +16,11 @@ export function FileUploader({ onFileChange }) {
       <input
         type="file"
         accept=".pdf"
-        onChange={(e) => onFileChange(e.target.files[0])}
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            onFileChange(e.target.files[0]);
+          }
+        }}
         style={{ cursor: "pointer" }}
       />
     </div>

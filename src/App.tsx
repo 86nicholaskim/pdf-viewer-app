@@ -3,6 +3,7 @@ import { usePDFViewer } from "./hooks/usePDFViewer";
 import { FileUploader } from "./components/FileUploader";
 import { PDFControls } from "./components/PDFControls";
 import { PDFCanvas } from "./components/PDFCanvas";
+import type { PDFDocumentProxy } from "@myorg/pdfjs";
 
 function App() {
   const {
@@ -14,9 +15,9 @@ function App() {
     goToPrevPage,
   } = usePDFViewer();
 
-  const [url, setUrl] = useState("");
-  const [isPrinting, setIsPrinting] = useState(false);
-  const [generatedHtml, setGeneratedHtml] = useState("");
+  const [url, setUrl] = useState<string>("");
+  const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const [generatedHtml, setGeneratedHtml] = useState<string>("");
 
   const handleUrlLoad = () => {
     if (url.trim()) {
@@ -31,7 +32,7 @@ function App() {
     performance.mark("gen-html-jpg-start");
 
     try {
-      const images = [];
+      const images: string[] = [];
       const scale = 1.5;
 
       for (let i = 1; i <= pdfDoc.numPages; i++) {
@@ -39,6 +40,7 @@ function App() {
         const viewport = page.getViewport({ scale });
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
+        if (!context) continue;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         await page.render({ canvasContext: context, viewport }).promise;

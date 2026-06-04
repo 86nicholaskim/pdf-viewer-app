@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import type { PDFDocumentProxy, RenderTask } from "@myorg/pdfjs";
 
-export function PDFCanvas({ pdfDoc, pageNum }) {
-  const [imgSrc, setImgSrc] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const renderTaskRef = useRef(null);
+interface PDFCanvasProps {
+  pdfDoc: PDFDocumentProxy;
+  pageNum: number;
+}
+
+export function PDFCanvas({ pdfDoc, pageNum }: PDFCanvasProps) {
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const renderTaskRef = useRef<RenderTask | null>(null);
 
   useEffect(() => {
     if (!pdfDoc) return;
@@ -20,6 +26,8 @@ export function PDFCanvas({ pdfDoc, pageNum }) {
         const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
+
+        if (!context) return;
 
         canvas.height = viewport.height;
         canvas.width = viewport.width;
@@ -44,7 +52,7 @@ export function PDFCanvas({ pdfDoc, pageNum }) {
           setImgSrc(canvas.toDataURL("image/png"));
           setLoading(false);
         }
-      } catch (err) {
+      } catch (err: any) {
         if (err.name !== "RenderingCancelledException") {
           console.error("렌더링 에러:", err);
           setLoading(false);

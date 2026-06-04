@@ -1,6 +1,17 @@
-let loadingPromise = null;
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
+}
 
-export async function loadPDFJS() {
+interface PDFJSLoadResult {
+  pdfjsLib: any;
+  workerFileName: string;
+}
+
+let loadingPromise: Promise<PDFJSLoadResult> | null = null;
+
+export async function loadPDFJS(): Promise<PDFJSLoadResult> {
   if (loadingPromise) return loadingPromise;
 
   loadingPromise = (async () => {
@@ -9,7 +20,7 @@ export async function loadPDFJS() {
       const versionMap = await response.json();
       const pdfjsFileName = versionMap['pdfjs'];
 
-      return new Promise((resolve, reject) => {
+      return new Promise<PDFJSLoadResult>((resolve, reject) => {
         const script = document.createElement('script');
         script.src = `/${pdfjsFileName}`;
         script.onload = () => {

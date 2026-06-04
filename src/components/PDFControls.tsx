@@ -1,3 +1,15 @@
+interface PDFControlsProps {
+  pageNum: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onPrint: () => void;
+  onPrintJPG: () => void;
+  onPrintBlob: () => void;
+  onGenerateHtmlJPG: () => void;
+  onGenerateHtmlPNG: () => void;
+}
+
 export function PDFControls({ 
   pageNum, 
   totalPages, 
@@ -8,7 +20,7 @@ export function PDFControls({
   onPrintBlob, 
   onGenerateHtmlJPG,
   onGenerateHtmlPNG
-}) {
+}: PDFControlsProps) {
   return (
     <div style={{ marginBottom: "15px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "center" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
