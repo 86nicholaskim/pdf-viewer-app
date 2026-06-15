@@ -18,11 +18,19 @@ function App() {
   const [url, setUrl] = useState<string>("");
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
   const [generatedHtml, setGeneratedHtml] = useState<string>("");
+  const [printPreviewHtml, setPrintPreviewHtml] = useState<string>("");
+  const [printPreviewUrls, setPrintPreviewUrls] = useState<string[]>([]);
 
   const handleUrlLoad = () => {
     if (url.trim()) {
       loadPDF(url);
     }
+  };
+
+  const cleanupPrintPreview = () => {
+    printPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPrintPreviewUrls([]);
+    setPrintPreviewHtml("");
   };
 
   const generateStandaloneHtmlJPG = async () => {
@@ -250,6 +258,81 @@ function App() {
     }
   };
 
+  const handlePrintIframe = async () => {
+    if (!pdfDoc) return;
+    
+    // 기존 프리뷰 리소스 정리
+    cleanupPrintPreview();
+    
+    setIsPrinting(true);
+    performance.mark("print-iframe-start");
+
+    const imageUrls: string[] = [];
+
+    try {
+      const scale = 2;
+
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) continue;
+        
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        
+        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/jpeg", 0.95));
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          imageUrls.push(url);
+        }
+      }
+
+      setPrintPreviewUrls(imageUrls);
+
+      const htmlContent = `
+        <html>
+          <head>
+            <title>PDF Print Preview</title>
+            <style>
+              body { margin: 0; padding: 20px; background: #525659; display: flex; flex-direction: column; align-items: center; gap: 20px; font-family: sans-serif; }
+              img { width: 100%; max-width: 800px; height: auto; display: block; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+              @media print {
+                body { background: white; padding: 0; display: block; }
+                img { box-shadow: none; max-width: none; page-break-after: always; }
+              }
+            </style>
+          </head>
+          <body>
+            <h2 style="color: white; @media print { display: none; }">인쇄 미리보기</h2>
+            ${imageUrls.map(url => `<img src="${url}" />`).join("")}
+          </body>
+        </html>
+      `;
+      
+      setPrintPreviewHtml(htmlContent);
+
+      performance.mark("print-iframe-end");
+      performance.measure("Iframe Print Duration", "print-iframe-start", "print-iframe-end");
+      console.log("Iframe 인쇄 데이터 생성 시간:", performance.getEntriesByName("Iframe Print Duration")[0].duration, "ms");
+
+    } catch (error) {
+      console.error("Iframe 인쇄 준비 오류:", error);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const executeIframePrint = () => {
+    const iframe = document.getElementById("print-preview-iframe") as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }
+  };
+
   return (
     <div
       style={{ padding: "20px", fontFamily: "sans-serif", textAlign: "center" }}
@@ -300,9 +383,38 @@ function App() {
           onPrint={handlePrint}
           onPrintJPG={handlePrintJPG}
           onPrintBlob={handlePrintBlob}
+          onPrintIframe={handlePrintIframe}
           onGenerateHtmlJPG={generateStandaloneHtmlJPG}
           onGenerateHtmlPNG={generateStandaloneHtmlPNG}
         />
+      )}
+
+      {printPreviewHtml && (
+        <div style={{ marginTop: "30px", padding: "20px", border: "2px solid #007bff", borderRadius: "8px", backgroundColor: "#f8f9fa" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+            <h3 style={{ margin: 0 }}>🖨️ 인쇄 미리보기 및 재인쇄</h3>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button 
+                onClick={executeIframePrint}
+                style={{ padding: "10px 20px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+              >
+                지금 인쇄하기
+              </button>
+              <button 
+                onClick={cleanupPrintPreview}
+                style={{ padding: "10px 20px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+          <iframe 
+            id="print-preview-iframe"
+            srcDoc={printPreviewHtml} 
+            style={{ width: "100%", height: "600px", border: "1px solid #ccc", borderRadius: "4px" }}
+            title="Print Preview"
+          />
+        </div>
       )}
 
       {generatedHtml && (
@@ -323,7 +435,7 @@ function App() {
         </div>
       )}
 
-      {pdfDoc && !loading && !isPrinting && !generatedHtml && (
+      {pdfDoc && !loading && !isPrinting && !generatedHtml && !printPreviewHtml && (
         <PDFCanvas pdfDoc={pdfDoc} pageNum={pageNum} />
       )}
     </div>

@@ -6,6 +6,7 @@ interface PDFControlsProps {
   onPrint: () => void;
   onPrintJPG: () => void;
   onPrintBlob: () => void;
+  onPrintIframe: () => void;
   onGenerateHtmlJPG: () => void;
   onGenerateHtmlPNG: () => void;
 }
@@ -18,6 +19,7 @@ export function PDFControls({
   onPrint, 
   onPrintJPG, 
   onPrintBlob, 
+  onPrintIframe,
   onGenerateHtmlJPG,
   onGenerateHtmlPNG
 }: PDFControlsProps) {
@@ -36,6 +38,12 @@ export function PDFControls({
       </div>
 
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+        <button 
+          onClick={onPrintIframe}
+          style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold" }}
+        >
+          iframe 인쇄 (권장)
+        </button>
         <button 
           onClick={onPrint}
           style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px" }}
