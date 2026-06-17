@@ -100,6 +100,40 @@ function App() {
     }
   };
 
+  const generateStandaloneHtmlWebP = async () => {
+    if (!pdfDoc) return;
+    setIsPrinting(true);
+    setGeneratedHtml("");
+    performance.mark("gen-html-webp-start");
+
+    try {
+      const images: string[] = [];
+      const scale = 1.5;
+
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) continue;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        images.push(canvas.toDataURL("image/webp", 0.8));
+      }
+
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF WebP Document</title><style>body { margin: 0; padding: 20px; background: #f0f0f0; font-family: sans-serif; }.page-container { max-width: 800px; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }img { width: 100%; height: auto; display: block; }@media print { body { background: white; padding: 0; }.page-container { box-shadow: none; margin-bottom: 0; page-break-after: always; }}</style></head><body>${images.map(img => `<div class="page-container"><img src="${img}" /></div>`).join("")}</body></html>`;
+      setGeneratedHtml(htmlContent);
+      performance.mark("gen-html-webp-end");
+      performance.measure("HTML Gen (WebP) Duration", "gen-html-webp-start", "gen-html-webp-end");
+      console.log("HTML (WebP) 생성 시간:", performance.getEntriesByName("HTML Gen (WebP) Duration")[0].duration, "ms");
+    } catch (error) {
+      console.error("HTML WebP 생성 오류:", error);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
   const handleDownloadHtml = () => {
     if (!generatedHtml) return;
     const blob = new Blob([generatedHtml], { type: "text/html" });
@@ -198,6 +232,53 @@ function App() {
       console.log("JPG 인쇄 소요 시간:", performance.getEntriesByName("JPG Print Duration")[0].duration, "ms");
     } catch (error) {
       console.error("JPG 인쇄 오류:", error);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const handlePrintWebP = async () => {
+    if (!pdfDoc) return;
+    setIsPrinting(true);
+    performance.mark("print-webp-start");
+
+    try {
+      const images = [];
+      const scale = 2;
+
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: context, viewport }).promise;
+        images.push(canvas.toDataURL("image/webp", 0.7));
+      }
+
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>PDF Print (WebP String)</title>
+            <style>
+              body { margin: 0; padding: 0; }
+              img { width: 100%; height: auto; display: block; page-break-after: always; }
+            </style>
+          </head>
+          <body>
+            ${images.map(img => `<img src="${img}" />`).join("")}
+            <script>window.onload = () => { window.print(); window.close(); };</script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      performance.mark("print-webp-end");
+      performance.measure("WebP Print Duration", "print-webp-start", "print-webp-end");
+      console.log("WebP 인쇄 소요 시간:", performance.getEntriesByName("WebP Print Duration")[0].duration, "ms");
+    } catch (error) {
+      console.error("WebP 인쇄 오류:", error);
     } finally {
       setIsPrinting(false);
     }
@@ -382,10 +463,12 @@ function App() {
           onNext={goToNextPage}
           onPrint={handlePrint}
           onPrintJPG={handlePrintJPG}
+          onPrintWebP={handlePrintWebP}
           onPrintBlob={handlePrintBlob}
           onPrintIframe={handlePrintIframe}
           onGenerateHtmlJPG={generateStandaloneHtmlJPG}
           onGenerateHtmlPNG={generateStandaloneHtmlPNG}
+          onGenerateHtmlWebP={generateStandaloneHtmlWebP}
         />
       )}
 

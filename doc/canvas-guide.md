@@ -33,7 +33,7 @@ const renderTask = page.render({ canvasContext: context, viewport });
 await renderTask.promise;
 
 // 3. 이미지 데이터로 변환 (Data URL)
-const imgSrc = canvas.toDataURL("image/png");
+const imgSrc = canvas.toDataURL("image/webp", 0.8);
 
 // 4. JSX에서 사용
 return <img src={imgSrc} alt="PDF Page" />;
@@ -83,8 +83,8 @@ export function PDFCanvas({ pdfDoc, pageNum }) {
       renderTaskRef.current = renderTask;
       await renderTask.promise;
 
-      if (!isCancelled) {
-        setImgSrc(canvas.toDataURL("image/png"));
+        if (!isCancelled) {
+        setImgSrc(canvas.toDataURL("image/webp", 0.8));
       }
     };
 

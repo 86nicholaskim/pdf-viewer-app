@@ -5,10 +5,12 @@ interface PDFControlsProps {
   onNext: () => void;
   onPrint: () => void;
   onPrintJPG: () => void;
+  onPrintWebP: () => void;
   onPrintBlob: () => void;
   onPrintIframe: () => void;
   onGenerateHtmlJPG: () => void;
   onGenerateHtmlPNG: () => void;
+  onGenerateHtmlWebP: () => void;
 }
 
 export function PDFControls({ 
@@ -18,10 +20,12 @@ export function PDFControls({
   onNext, 
   onPrint, 
   onPrintJPG, 
+  onPrintWebP,
   onPrintBlob, 
   onPrintIframe,
   onGenerateHtmlJPG,
-  onGenerateHtmlPNG
+  onGenerateHtmlPNG,
+  onGenerateHtmlWebP
 }: PDFControlsProps) {
   return (
     <div style={{ marginBottom: "15px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "center" }}>
@@ -57,6 +61,12 @@ export function PDFControls({
           JPG 스트링 인쇄 (저용량)
         </button>
         <button 
+          onClick={onPrintWebP}
+          style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#fd7e14", color: "white", border: "none", borderRadius: "4px" }}
+        >
+          WebP 스트링 인쇄 (최적화)
+        </button>
+        <button 
           onClick={onPrintBlob}
           style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#6f42c1", color: "white", border: "none", borderRadius: "4px" }}
         >
@@ -73,6 +83,12 @@ export function PDFControls({
           style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#0056b3", color: "white", border: "none", borderRadius: "4px" }}
         >
           외부용 HTML (PNG)
+        </button>
+        <button 
+          onClick={onGenerateHtmlWebP}
+          style={{ padding: "8px 15px", cursor: "pointer", backgroundColor: "#20c997", color: "white", border: "none", borderRadius: "4px" }}
+        >
+          외부용 HTML (WebP)
         </button>
       </div>
     </div>

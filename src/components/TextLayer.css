@@ -1,0 +1,51 @@
+.textLayer {
+  position: absolute;
+  text-align: initial;
+  inset: 0;
+  overflow: hidden;
+  opacity: 1;
+  line-height: 1;
+  text-rendering: optimizeLegibility;
+  pointer-events: auto;
+}
+
+.textLayer span,
+.textLayer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+
+.textLayer span {
+  /* PDF.js 4.x pattern: font-size and transform are handled via variables */
+  font-size: calc(var(--font-height) * var(--total-scale-factor));
+  transform: rotate(var(--rotate, 0deg)) scaleX(var(--scale-x, 1));
+}
+
+/* selection background */
+.textLayer ::selection {
+  background: rgba(0, 0, 255, 0.25);
+}
+
+/* Ensure selection color is also transparent to avoid ghost text in some browsers */
+.textLayer span::selection {
+  color: transparent;
+}
+
+.textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  cursor: default;
+  user-select: none;
+}
+
+.textLayer .endOfContent.active {
+  top: 0;
+}
